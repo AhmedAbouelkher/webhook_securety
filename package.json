@@ -1,7 +1,6 @@
 {
     "name": "securety",
     "version": "1.0.0",
-    "description": "Kopii gifting service",
     "main": "lib/index.js",
     "keywords": [],
     "author": "Ahmed Mahmoud",
@@ -13,16 +12,12 @@
     },
     "devDependencies": {
         "@types/crypto-js": "^4.1.1",
-        "@types/lodash": "^4.14.181",
         "@types/node": "^17.0.23",
         "prettier": "^2.6.2",
         "tsc-watch": "^5.0.2"
     },
     "dependencies": {
-        "axios": "^0.26.1",
         "crypto-js": "^4.1.1",
-        "dotenv": "^16.0.0",
-        "lodash": "^4.17.21",
-        "nanoid": "^3.3.2"
+        "dotenv": "^16.0.0"
     }
 }
