@@ -1,27 +1,24 @@
 import dotenv from "dotenv";
+import _ from "lodash";
 
 dotenv.config();
 
-import generateSignature from "./generate_signature";
-import generatePayload, { payload } from "./generate_payload";
+import generateSignedPayload, { payload } from "./generate_signed_payload";
 import constructEvent from "./validate_payload";
 
 async function run() {
     const secret = process.env.SECRET ?? "";
 
-    const signature = generateSignature(payload, secret);
-    const signedPayload = generatePayload(payload);
-
-    console.log("*-----***-----*");
+    const signature = generateSignedPayload({ payload, secret });
 
     setTimeout(() => {
         try {
-            const event = constructEvent(signedPayload, signature, secret);
-            console.log("EVENT:", event);
+            constructEvent(payload, signature, secret);
+            console.log("EVENT CREATED");
         } catch (error: any) {
-            console.error(error.message);
+            console.error(`INVALID REQUEST ${error.message}`);
         }
-    }, 100);
+    }, 1550);
 }
 
 run();

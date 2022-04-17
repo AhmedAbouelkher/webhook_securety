@@ -17,37 +17,34 @@ To protect against timing attacks, use a constant-time string comparison to comp
 to each of the received signatures.
 */
 
-const constructEvent = (body: string, signature: string, secret: string) => {
-    //parse body
-    const { payload } = parseBody(body);
-
+const constructEvent = (body: any, signature: string, secret: string) => {
     //parse signature
     const { t: t1, v1: v1 } = parseSignature(signature);
 
-    //hash payload
-    const hashedBodyPayload = hmacSHA256(payload, secret).toString();
+    // Regenerate signature from body.
+    const reconstructedSignature = reconstructPayloadSignature({
+        payload: body,
+        secret,
+        timeStamp: t1,
+    });
 
     //compare signature v1 with hashed payload
-    const isValidSignature = v1 === hashedBodyPayload;
-    if (!isValidSignature) throw new Error("Invalid signature");
+    const isValidSignature = v1 === reconstructedSignature;
 
-    // compare t1 with current time
+    if (!isValidSignature) {
+        throw new Error("Invalid signature");
+    }
+
+    // compare {t1} with current time
     const currentTime = new Date().getTime();
-    const isValidTime = Math.abs(currentTime - t1) < 300;
+    const isValidTime = Math.abs(currentTime - t1) < 1 * 1000; // 1 second
 
-    if (!isValidTime) throw new Error("Invalid timestamp");
+    if (!isValidTime) {
+        throw new Error("Invalid timestamp");
+    }
 
     //jsonify payload
-    const payloadJson = JSON.parse(payload);
-    return payloadJson;
-};
-
-const parseBody = (body: string) => {
-    const splitted = body.split(".");
-    return {
-        t: parseInt(splitted[0]),
-        payload: splitted[1],
-    };
+    return body;
 };
 
 //parse signature
@@ -59,6 +56,21 @@ const parseSignature = (signature: string) => {
         t: t1Value,
         v1: v1Value,
     };
+};
+
+const reconstructPayloadSignature = ({
+    payload,
+    secret,
+    timeStamp,
+}: {
+    payload: any;
+    secret: string;
+    timeStamp: number;
+}) => {
+    const body = JSON.stringify(payload);
+    const signedPayload = `${timeStamp}.${body}`;
+    const signatureHash = hmacSHA256(signedPayload, secret);
+    return signatureHash.toString();
 };
 
 export default constructEvent;

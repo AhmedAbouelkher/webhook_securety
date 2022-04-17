@@ -1,3 +1,5 @@
+import hmacSHA256 from "crypto-js/hmac-sha256";
+
 export const payload = {
     object: {
         id: "sub_1KSskQL4r9sVX2wg7xNYp4Fv",
@@ -22,10 +24,28 @@ export const payload = {
     },
 };
 
-const generatePayload = (payload: any) => {
-    const body = JSON.stringify(payload);
+const generateSignature = ({
+    payload,
+    secret,
+}: {
+    payload: any;
+    secret: string;
+}) => {
     const timeStamp = new Date().getTime();
+    const signedPayload = generateSignedPayload({ payload, timeStamp });
+    const hash = hmacSHA256(signedPayload, secret);
+    return `t=${timeStamp},v1=${hash}`;
+};
+
+const generateSignedPayload = ({
+    payload,
+    timeStamp,
+}: {
+    payload: any;
+    timeStamp: number;
+}) => {
+    const body = JSON.stringify(payload);
     return `${timeStamp}.${body}`;
 };
 
-export default generatePayload;
+export default generateSignature;
